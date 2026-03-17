@@ -13,6 +13,9 @@ async function loadSiteSettings() {
         if (data) {
             document.querySelectorAll('.site-name').forEach(el => el.innerText = data.name);
             document.querySelectorAll('.site-bio').forEach(el => el.innerText = data.bio);
+            if (data.avatar_url) {
+                document.querySelectorAll('.site-avatar').forEach(el => el.src = data.avatar_url);
+            }
             // Optionally update title if we are on index
             if (document.title.includes('Your Name')) {
                 document.title = document.title.replace('Your Name', data.name);

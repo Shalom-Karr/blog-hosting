@@ -13,11 +13,12 @@ CREATE TABLE public.posts (
   is_published boolean DEFAULT false
 );
 
--- 2. Create the site_settings table (for Name and Bio)
+-- 2. Create the site_settings table (for Name, Bio, and Avatar)
 CREATE TABLE public.site_settings (
   id integer PRIMARY KEY DEFAULT 1,
   name text DEFAULT 'Your Name',
-  bio text DEFAULT 'Full-stack developer building cool things on the internet.'
+  bio text DEFAULT 'Full-stack developer building cool things on the internet.',
+  avatar_url text DEFAULT 'https://via.placeholder.com/150'
 );
 
 -- Enforce single row for settings
@@ -40,4 +41,4 @@ CREATE POLICY "Authenticated users can update settings" ON public.site_settings 
 CREATE POLICY "Authenticated users can insert settings" ON public.site_settings FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- 6. Insert default settings
-INSERT INTO public.site_settings (id, name, bio) VALUES (1, 'Your Name', 'Full-stack developer building cool things on the internet.') ON CONFLICT DO NOTHING;
+INSERT INTO public.site_settings (id, name, bio, avatar_url) VALUES (1, 'Your Name', 'Full-stack developer building cool things on the internet.', 'https://via.placeholder.com/150') ON CONFLICT DO NOTHING;

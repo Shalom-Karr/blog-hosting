@@ -130,6 +130,10 @@
             <input type="text" id="setting-name" class="w-full border dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Your Name">
           </div>
           <div>
+            <label class="block text-sm font-bold mb-1">Avatar URL</label>
+            <input type="text" id="setting-avatar" class="w-full border dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://example.com/avatar.jpg">
+          </div>
+          <div>
             <label class="block text-sm font-bold mb-1">Bio</label>
             <textarea id="setting-bio" rows="4" class="w-full border dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Full-stack developer..."></textarea>
           </div>
@@ -147,7 +151,7 @@
     let currentPostId = null;
     let easyMDE = null;
     let allPosts = [];
-    let mockSettings = { name: "Your Name", bio: "Full-stack developer building cool things on the internet." };
+    let mockSettings = { name: "Your Name", bio: "Full-stack developer building cool things on the internet.", avatar_url: "https://via.placeholder.com/150" };
 
     document.addEventListener("DOMContentLoaded", async () => {
       // Initialize EasyMDE
@@ -351,26 +355,29 @@
       if (isDevMode) {
         document.getElementById('setting-name').value = mockSettings.name;
         document.getElementById('setting-bio').value = mockSettings.bio;
+        document.getElementById('setting-avatar').value = mockSettings.avatar_url;
         return;
       }
       const { data, error } = await supabaseClient.from('site_settings').select('*').eq('id', 1).single();
       if (data) {
         document.getElementById('setting-name').value = data.name;
         document.getElementById('setting-bio').value = data.bio;
+        document.getElementById('setting-avatar').value = data.avatar_url || '';
       }
     }
 
     async function saveSettings() {
       const name = document.getElementById('setting-name').value.trim();
       const bio = document.getElementById('setting-bio').value.trim();
+      const avatar_url = document.getElementById('setting-avatar').value.trim();
 
       if (isDevMode) {
-        mockSettings = { name, bio };
+        mockSettings = { name, bio, avatar_url };
         showMsg("settings-msg", "Settings updated locally!");
         return;
       }
 
-      const { error } = await supabaseClient.from('site_settings').upsert({ id: 1, name, bio });
+      const { error } = await supabaseClient.from('site_settings').upsert({ id: 1, name, bio, avatar_url });
       if (error) {
         showMsg("settings-msg", "Error: " + error.message, "error");
       } else {
