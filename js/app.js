@@ -7,7 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function loadSiteSettings() {
-    if (typeof supabaseClient === 'undefined') return;
+    if (!window.supabaseClient) {
+        console.warn("Supabase is unconfigured. Showing default UI.");
+        return;
+    }
     try {
         const { data, error } = await supabaseClient.from('site_settings').select('*').eq('id', 1).single();
         if (data) {

@@ -163,9 +163,11 @@
       });
 
       // Check auth session
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        showDashboard(false);
+      if (window.supabaseClient) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+          showDashboard(false);
+        }
       }
     });
 

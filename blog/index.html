@@ -146,6 +146,12 @@
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       const container = document.getElementById('posts-container');
+
+      if (!window.supabaseClient) {
+          container.innerHTML = '<div class="p-6 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl border border-red-200 dark:border-red-800"><b>Supabase Configuration Error:</b> The environment variables SUPABASE_URL and SUPABASE_ANON_KEY are missing. Please set them in your Cloudflare Pages dashboard and trigger a new build.</div>';
+          return;
+      }
+
       try {
         const { data: posts, error } = await supabaseClient
           .from('posts')

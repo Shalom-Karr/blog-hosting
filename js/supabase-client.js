@@ -6,8 +6,13 @@ function getEnv(key, fallback) {
     return fallback;
 }
 
-const SUPABASE_URL = getEnv('SUPABASE_URL', 'YOUR_SUPABASE_PROJECT_URL');
-const SUPABASE_ANON_KEY = getEnv('SUPABASE_ANON_KEY', 'YOUR_SUPABASE_ANON_KEY');
+const SUPABASE_URL = getEnv('SUPABASE_URL', '');
+const SUPABASE_ANON_KEY = getEnv('SUPABASE_ANON_KEY', '');
 
-// Initialize the global supabase client (requires the CDN script in your HTML)
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize the global supabase client ONLY if valid credentials exist
+let supabaseClient;
+if (SUPABASE_URL.startsWith('http')) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+    console.warn("Supabase Client failed to initialize: Invalid or missing SUPABASE_URL environment variable.");
+}
