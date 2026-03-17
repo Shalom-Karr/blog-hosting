@@ -257,11 +257,11 @@
       list.innerHTML = '';
       allPosts.forEach((p, index) => {
         const div = document.createElement('div');
-        div.className = \`p-4 border-b dark:border-gray-700 cursor-pointer transition-colors \${currentPostId === p.id ? 'bg-blue-50 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}\`;
-        div.innerHTML = \`
-          <h3 class="font-bold text-sm truncate">\${p.title}</h3>
-          <p class="text-xs text-gray-500 mt-1">\${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</span>' : '<span class="text-yellow-600 dark:text-yellow-400">Draft</span>'}</p>
-        \`;
+        div.className = `p-4 border-b dark:border-gray-700 cursor-pointer transition-colors ${currentPostId === p.id ? 'bg-blue-50 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+        div.innerHTML = `
+          <h3 class="font-bold text-sm truncate">${p.title}</h3>
+          <p class="text-xs text-gray-500 mt-1">${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</span>' : '<span class="text-yellow-600 dark:text-yellow-400">Draft</span>'}</p>
+        `;
         div.onclick = () => { editPost(index); switchTab('editor'); };
         list.appendChild(div);
       });
