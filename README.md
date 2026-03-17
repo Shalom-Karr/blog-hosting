@@ -72,7 +72,7 @@ This project is perfectly suited for **Cloudflare Pages**, GitHub Pages, Vercel,
 3. Select your repository.
 4. **Important**: Under **Build settings**, set the **Build command** to:
    ```bash
-   bash scripts/inject-env.sh
+   node scripts/inject-env.js
    ```
 5. Set the **Build output directory** to: `.` *(just a single dot)*.
 6. Under **Environment variables**, add `SUPABASE_URL` and `SUPABASE_ANON_KEY` and populate them with your Supabase API keys.
