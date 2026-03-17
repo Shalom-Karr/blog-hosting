@@ -145,7 +145,7 @@
       }
 
       try {
-        const { data: post, error } = await supabaseClient
+        const { data: post, error } = await window.supabaseClient
           .from('posts')
           .select('*')
           .eq('slug', slug)

@@ -12,7 +12,7 @@ async function loadSiteSettings() {
         return;
     }
     try {
-        const { data, error } = await supabaseClient.from('site_settings').select('*').eq('id', 1).single();
+        const { data, error } = await window.supabaseClient.from('site_settings').select('*').eq('id', 1).single();
         if (data) {
             document.querySelectorAll('.site-name').forEach(el => el.innerText = data.name);
             document.querySelectorAll('.site-bio').forEach(el => el.innerText = data.bio);

@@ -11,9 +11,8 @@ const clientContent = `
 const SUPABASE_URL = "${process.env.SUPABASE_URL || ''}";
 const SUPABASE_ANON_KEY = "${process.env.SUPABASE_ANON_KEY || ''}";
 
-let supabaseClient;
 if (SUPABASE_URL && SUPABASE_URL.startsWith('http')) {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('Supabase Client Initialized.');
 } else {
     console.warn("Supabase Client failed to initialize: Invalid or missing SUPABASE_URL environment variable.");

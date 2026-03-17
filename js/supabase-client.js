@@ -10,9 +10,9 @@ const SUPABASE_URL = getEnv('SUPABASE_URL', '');
 const SUPABASE_ANON_KEY = getEnv('SUPABASE_ANON_KEY', '');
 
 // Initialize the global supabase client ONLY if valid credentials exist
-let supabaseClient;
 if (SUPABASE_URL.startsWith('http')) {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase Client Initialized locally.');
 } else {
     console.warn("Supabase Client failed to initialize: Invalid or missing SUPABASE_URL environment variable.");
 }

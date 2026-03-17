@@ -164,7 +164,7 @@
 
       // Check auth session
       if (window.supabaseClient) {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
         if (session) {
           showDashboard(false);
         }
@@ -177,7 +177,7 @@
       const msg = document.getElementById('login-msg');
       msg.innerText = "Logging in...";
       
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
         msg.innerText = error.message;
       } else {
@@ -192,7 +192,7 @@
     }
 
     async function logout() {
-      if (!isDevMode) await supabaseClient.auth.signOut();
+      if (!isDevMode) await window.supabaseClient.auth.signOut();
       isDevMode = false;
       document.getElementById('dashboard-section').classList.add('hidden');
       document.getElementById('dashboard-section').classList.remove('flex');
@@ -239,7 +239,7 @@
         return;
       }
 
-      const { data, error } = await supabaseClient
+      const { data, error } = await window.supabaseClient
         .from('posts')
         .select('*')
         .order('created_at', { ascending: false });
@@ -334,10 +334,10 @@
 
       let error;
       if (currentPostId) {
-        const res = await supabaseClient.from('posts').update(postData).eq('id', currentPostId);
+        const res = await window.supabaseClient.from('posts').update(postData).eq('id', currentPostId);
         error = res.error;
       } else {
-        const res = await supabaseClient.from('posts').insert([postData]).select();
+        const res = await window.supabaseClient.from('posts').insert([postData]).select();
         error = res.error;
         if (res.data && res.data.length > 0) {
           currentPostId = res.data[0].id;
@@ -360,7 +360,7 @@
         document.getElementById('setting-avatar').value = mockSettings.avatar_url;
         return;
       }
-      const { data, error } = await supabaseClient.from('site_settings').select('*').eq('id', 1).single();
+      const { data, error } = await window.supabaseClient.from('site_settings').select('*').eq('id', 1).single();
       if (data) {
         document.getElementById('setting-name').value = data.name;
         document.getElementById('setting-bio').value = data.bio;
@@ -379,7 +379,7 @@
         return;
       }
 
-      const { error } = await supabaseClient.from('site_settings').upsert({ id: 1, name, bio, avatar_url });
+      const { error } = await window.supabaseClient.from('site_settings').upsert({ id: 1, name, bio, avatar_url });
       if (error) {
         showMsg("settings-msg", "Error: " + error.message, "error");
       } else {
