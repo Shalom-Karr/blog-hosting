@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="layout" style="grid-template-columns: 1fr; max-width: 800px;">
+    <main class="content">
+      <h1>Admin Dashboard</h1>
+      
+      <!-- Login Section -->
+      <div id="login-section">
+        <p>Please log in to manage your blog.</p>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••">
+        </div>
+        <button class="primary" onclick="login()">Log In</button>
+        <p id="login-msg" style="color: red;"></p>
+      </div>
+
+      <!-- Dashboard Section (Hidden by default) -->
+      <div id="dashboard-section" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2>Create New Post</h2>
+          <button class="primary" onclick="logout()" style="background: #cc0000;">Log Out</button>
+        </div>
+        
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="post-title" placeholder="My Awesome Post">
+        </div>
+        <div class="form-group">
+          <label>Slug (URL friendly)</label>
+          <input type="text" id="post-slug" placeholder="my-awesome-post">
+        </div>
+        <div class="form-group">
+          <label>Excerpt</label>
+          <input type="text" id="post-excerpt" placeholder="A short summary of the post">
+        </div>
+        <div class="form-group">
+          <label>Tags (comma separated)</label>
+          <input type="text" id="post-tags" placeholder="python, coding, life">
+        </div>
+        <div class="form-group">
+          <label>Content (Markdown)</label>
+          <textarea id="post-content" rows="15" placeholder="# Hello World\n\nWrite your markdown here..."></textarea>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="post-published">
+          <label style="margin: 0;">Publish immediately</label>
+        </div>
+        
+        <button class="primary" onclick="submitPost()">Save Post</button>
+        <p id="post-msg"></p>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/supabase-client.js"></script>
+  <script>
+    const loginSection = document.getElementById('login-section');
+    const dashboardSection = document.getElementById('dashboard-section');
+    const loginMsg = document.getElementById('login-msg');
+    const postMsg = document.getElementById('post-msg');
+
+    // Check session on load
+    document.addEventListener("DOMContentLoaded", async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        showDashboard();
+      }
+    });
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      loginMsg.innerText = "Logging in...";
+      
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        loginMsg.innerText = error.message;
+      } else {
+        loginMsg.innerText = "";
+        showDashboard();
+      }
+    }
+
+    async function logout() {
+      await supabaseClient.auth.signOut();
+      dashboardSection.style.display = 'none';
+      loginSection.style.display = 'block';
+    }
+
+    function showDashboard() {
+      loginSection.style.display = 'none';
+      dashboardSection.style.display = 'block';
+    }
+
+    async function submitPost() {
+      postMsg.innerText = "Saving...";
+      postMsg.style.color = "inherit";
+
+      const title = document.getElementById('post-title').value;
+      const slug = document.getElementById('post-slug').value;
+      const excerpt = document.getElementById('post-excerpt').value;
+      const tagsRaw = document.getElementById('post-tags').value;
+      const content_md = document.getElementById('post-content').value;
+      const is_published = document.getElementById('post-published').checked;
+
+      const tagsArray = tagsRaw.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+      const { data, error } = await supabaseClient
+        .from('posts')
+        .insert([
+          {
+            title,
+            slug,
+            excerpt,
+            content_md,
+            tags: tagsArray,
+            is_published
+          }
+        ]);
+
+      if (error) {
+        postMsg.innerText = "Error: " + error.message;
+        postMsg.style.color = "red";
+      } else {
+        postMsg.innerText = "Post saved successfully!";
+        postMsg.style.color = "green";
+        // Clear form
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-slug').value = '';
+        document.getElementById('post-excerpt').value = '';
+        document.getElementById('post-tags').value = '';
+        document.getElementById('post-content').value = '';
+        document.getElementById('post-published').checked = false;
+      }
+    }
+  </script>
+</body>
+</html>

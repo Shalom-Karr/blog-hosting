@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <title>Post · Your Name</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <!-- Supabase v2 & Marked for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar-left">
+      <div class="profile">
+        <img src="https://via.placeholder.com/100" alt="Avatar" class="avatar">
+        <h1>Your Name</h1>
+      </div>
+      <nav>
+        <a href="/">Profile</a>
+        <a href="/blog/">Blog &larr;</a>
+      </nav>
+      <button id="theme-toggle" class="theme-btn">Toggle Theme</button>
+    </aside>
+
+    <main class="content">
+      <article class="single-post" id="post-container">
+        <p>Loading post...</p>
+      </article>
+    </main>
+
+    <aside class="sidebar-right">
+      <div class="widget search-widget">
+      </div>
+    </aside>
+  </div>
+
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('slug');
+      const container = document.getElementById('post-container');
+
+      if (!slug) {
+        container.innerHTML = '<p>No post specified.</p>';
+        return;
+      }
+
+      try {
+        const { data: post, error } = await supabaseClient
+          .from('posts')
+          .select('*')
+          .eq('slug', slug)
+          .eq('is_published', true)
+          .single();
+
+        if (error || !post) {
+          throw new Error('Post not found');
+        }
+
+        // Set page title
+        document.title = `${post.title} · Your Name`;
+
+        // Parse markdown content
+        const htmlContent = marked.parse(post.content_md);
+
+        container.innerHTML = `
+          <h1>${post.title}</h1>
+          <div class="post-meta" style="margin-bottom: 2rem; color: #666;">
+            <small>Published: ${new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</small>
+            ${post.tags && post.tags.length > 0 ? `| Tags: ${post.tags.join(', ')}` : ''}
+          </div>
+          <div class="post-body markdown-body">
+            ${htmlContent}
+          </div>
+        `;
+      } catch (err) {
+        console.error('Error fetching post:', err);
+        container.innerHTML = '<h1>404</h1><p>The post could not be found.</p>';
+      }
+    });
+  </script>
+</body>
+</html>
