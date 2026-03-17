@@ -59,18 +59,22 @@
   <!-- Dashboard Section -->
   <div id="dashboard-section" class="hidden flex-1 overflow-hidden">
     <!-- Sidebar -->
-    <aside class="w-64 border-r dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col h-full">
+    <aside class="w-64 border-r dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col h-full shrink-0">
       <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
-        <h2 class="font-bold">Posts</h2>
-        <button onclick="newPost()" class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">+</button>
+        <h2 class="font-bold text-gray-500 uppercase text-xs tracking-wider">Menu</h2>
+        <button onclick="newPost()" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded" title="New Post">New Post</button>
+      </div>
+      <div class="p-2 border-b dark:border-gray-700 flex flex-col gap-1">
+        <button onclick="switchTab('editor')" id="tab-editor" class="text-left px-3 py-2 bg-blue-50 dark:bg-blue-900 rounded text-sm font-bold text-blue-600 dark:text-blue-300">Editor</button>
+        <button onclick="switchTab('settings')" id="tab-settings" class="text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm font-medium">Settings</button>
       </div>
       <div id="post-list" class="flex-1 overflow-y-auto">
         <!-- Posts injected here -->
       </div>
     </aside>
     
-    <!-- Editor -->
-    <main class="flex-1 overflow-y-auto p-6 lg:p-10 bg-gray-50 dark:bg-gray-900">
+    <!-- Editor Tab -->
+    <main id="editor-view" class="flex-1 overflow-y-auto p-6 lg:p-10 bg-gray-50 dark:bg-gray-900">
       <div class="max-w-4xl mx-auto space-y-6">
         <div class="flex justify-between items-center">
           <h2 id="editor-title" class="text-2xl font-bold">Create New Post</h2>
@@ -110,6 +114,29 @@
         </div>
       </div>
     </main>
+
+    <!-- Settings Tab -->
+    <main id="settings-view" class="hidden flex-1 overflow-y-auto p-6 lg:p-10 bg-gray-50 dark:bg-gray-900">
+      <div class="max-w-2xl mx-auto space-y-6">
+        <div class="flex justify-between items-center border-b dark:border-gray-700 pb-4">
+          <h2 class="text-2xl font-bold">Site Settings</h2>
+          <button onclick="saveSettings()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold transition-colors">Save Settings</button>
+        </div>
+        <p id="settings-msg" class="text-sm h-4"></p>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold mb-1">Display Name</label>
+            <input type="text" id="setting-name" class="w-full border dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Your Name">
+          </div>
+          <div>
+            <label class="block text-sm font-bold mb-1">Bio</label>
+            <textarea id="setting-bio" rows="4" class="w-full border dark:border-gray-700 rounded px-3 py-2 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Full-stack developer..."></textarea>
+          </div>
+        </div>
+      </div>
+    </main>
+
   </div>
 
   <script src="/js/supabase-client.js"></script>
@@ -119,6 +146,7 @@
     let currentPostId = null;
     let easyMDE = null;
     let allPosts = [];
+    let mockSettings = { name: "Your Name", bio: "Full-stack developer building cool things on the internet." };
 
     document.addEventListener("DOMContentLoaded", async () => {
       // Initialize EasyMDE
@@ -175,12 +203,29 @@
       document.getElementById('user-mode-label').innerText = devMode ? 'DEV MODE' : 'Admin';
       
       await loadPosts();
+      await fetchSettings();
+    }
+
+    function switchTab(tab) {
+      document.getElementById('editor-view').classList.toggle('hidden', tab !== 'editor');
+      document.getElementById('settings-view').classList.toggle('hidden', tab !== 'settings');
+      
+      const tEditor = document.getElementById('tab-editor');
+      const tSettings = document.getElementById('tab-settings');
+      
+      if (tab === 'editor') {
+        tEditor.className = "text-left px-3 py-2 bg-blue-50 dark:bg-blue-900 rounded text-sm font-bold text-blue-600 dark:text-blue-300";
+        tSettings.className = "text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm font-medium";
+      } else {
+        tSettings.className = "text-left px-3 py-2 bg-blue-50 dark:bg-blue-900 rounded text-sm font-bold text-blue-600 dark:text-blue-300";
+        tEditor.className = "text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm font-medium";
+      }
     }
 
     async function loadPosts() {
       if (isDevMode) {
         allPosts = [
-          { id: 'dev-1', title: 'Test Post 1', slug: 'test-1', excerpt: 'Excerpt', content_md: '# Hello\n\nThis is a mock post.', is_published: true, tags: ['test'] },
+          { id: 'dev-1', title: 'Test Post 1', slug: 'test-1', excerpt: 'Excerpt', content_md: '# Hello\\n\\nThis is a mock post.', is_published: true, tags: ['test'] },
           { id: 'dev-2', title: 'Draft Post', slug: 'draft', excerpt: 'Draft', content_md: 'Drafting...', is_published: false, tags: [] }
         ];
         renderPostList();
@@ -205,14 +250,12 @@
       list.innerHTML = '';
       allPosts.forEach((p, index) => {
         const div = document.createElement('div');
-        div.className = `p-4 border-b dark:border-gray-700 cursor-pointer transition-colors ${currentPostId === p.id ? 'bg-blue-50 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`;
-        div.innerHTML = `
-          <h3 class="font-bold text-sm truncate">
-${p.title}</h3>
-          <p class="text-xs text-gray-500 mt-1">
-${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</span>' : '<span class="text-yellow-600 dark:text-yellow-400">Draft</span>'}</p>
-        `;
-        div.onclick = () => editPost(index);
+        div.className = \`p-4 border-b dark:border-gray-700 cursor-pointer transition-colors \${currentPostId === p.id ? 'bg-blue-50 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}\`;
+        div.innerHTML = \`
+          <h3 class="font-bold text-sm truncate">\${p.title}</h3>
+          <p class="text-xs text-gray-500 mt-1">\${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</span>' : '<span class="text-yellow-600 dark:text-yellow-400">Draft</span>'}</p>
+        \`;
+        div.onclick = () => { editPost(index); switchTab('editor'); };
         list.appendChild(div);
       });
     }
@@ -228,6 +271,7 @@ ${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</
       document.getElementById('post-published').checked = false;
       document.getElementById('post-msg').innerText = '';
       renderPostList(); // Clear active state
+      switchTab('editor');
     }
 
     function editPost(index) {
@@ -244,10 +288,10 @@ ${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</
       renderPostList(); // Update active state
     }
 
-    function showMsg(text, type = 'success') {
-      const msg = document.getElementById('post-msg');
+    function showMsg(id, text, type = 'success') {
+      const msg = document.getElementById(id);
       msg.innerText = text;
-      msg.className = `text-sm h-4 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
+      msg.className = \`text-sm h-4 \${type === 'error' ? 'text-red-600' : 'text-green-600'}\`;
       setTimeout(() => msg.innerText = '', 3000);
     }
 
@@ -260,7 +304,7 @@ ${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</
       const is_published = document.getElementById('post-published').checked;
 
       if (!title || !slug || !content_md) {
-        showMsg("Title, Slug, and Content are required.", "error");
+        showMsg("post-msg", "Title, Slug, and Content are required.", "error");
         return;
       }
 
@@ -277,7 +321,7 @@ ${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</
           currentPostId = newMock.id;
         }
         renderPostList();
-        showMsg("Saved locally in Dev Mode!");
+        showMsg("post-msg", "Saved locally in Dev Mode!");
         return;
       }
 
@@ -294,11 +338,42 @@ ${p.is_published ? '<span class="text-green-600 dark:text-green-400">Published</
       }
 
       if (error) {
-        showMsg("Error: " + error.message, "error");
+        showMsg("post-msg", "Error: " + error.message, "error");
       } else {
-        showMsg("Post saved successfully!");
+        showMsg("post-msg", "Post saved successfully!");
         document.getElementById('editor-title').innerText = "Edit Post";
         await loadPosts();
+      }
+    }
+
+    async function fetchSettings() {
+      if (isDevMode) {
+        document.getElementById('setting-name').value = mockSettings.name;
+        document.getElementById('setting-bio').value = mockSettings.bio;
+        return;
+      }
+      const { data, error } = await supabaseClient.from('site_settings').select('*').eq('id', 1).single();
+      if (data) {
+        document.getElementById('setting-name').value = data.name;
+        document.getElementById('setting-bio').value = data.bio;
+      }
+    }
+
+    async function saveSettings() {
+      const name = document.getElementById('setting-name').value.trim();
+      const bio = document.getElementById('setting-bio').value.trim();
+
+      if (isDevMode) {
+        mockSettings = { name, bio };
+        showMsg("settings-msg", "Settings updated locally!");
+        return;
+      }
+
+      const { error } = await supabaseClient.from('site_settings').upsert({ id: 1, name, bio });
+      if (error) {
+        showMsg("settings-msg", "Error: " + error.message, "error");
+      } else {
+        showMsg("settings-msg", "Settings saved successfully!");
       }
     }
   </script>

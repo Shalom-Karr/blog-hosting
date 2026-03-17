@@ -3,7 +3,25 @@ document.addEventListener("DOMContentLoaded", () => {
     initThemeToggle();
     initScrollAnimations();
     initProgressBar();
+    loadSiteSettings();
 });
+
+async function loadSiteSettings() {
+    if (typeof supabaseClient === 'undefined') return;
+    try {
+        const { data, error } = await supabaseClient.from('site_settings').select('*').eq('id', 1).single();
+        if (data) {
+            document.querySelectorAll('.site-name').forEach(el => el.innerText = data.name);
+            document.querySelectorAll('.site-bio').forEach(el => el.innerText = data.bio);
+            // Optionally update title if we are on index
+            if (document.title.includes('Your Name')) {
+                document.title = document.title.replace('Your Name', data.name);
+            }
+        }
+    } catch (err) {
+        console.warn('Could not load site settings. Using defaults.', err);
+    }
+}
 
 function initThemeToggle() {
     const toggleBtn = document.getElementById('theme-toggle');

@@ -13,29 +13,31 @@ CREATE TABLE public.posts (
   is_published boolean DEFAULT false
 );
 
--- 2. Enable Row Level Security (RLS)
+-- 2. Create the site_settings table (for Name and Bio)
+CREATE TABLE public.site_settings (
+  id integer PRIMARY KEY DEFAULT 1,
+  name text DEFAULT 'Your Name',
+  bio text DEFAULT 'Full-stack developer building cool things on the internet.'
+);
+
+-- Enforce single row for settings
+ALTER TABLE public.site_settings ADD CONSTRAINT single_row CHECK (id = 1);
+
+-- 3. Enable Row Level Security (RLS)
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 
--- 3. Create Security Policies
--- Allow anyone to read published posts
-CREATE POLICY "Public posts are viewable by everyone"
-ON public.posts FOR SELECT
-USING (is_published = true);
+-- 4. Create Security Policies for Posts
+CREATE POLICY "Public posts are viewable by everyone" ON public.posts FOR SELECT USING (is_published = true);
+CREATE POLICY "Authenticated users can read all posts" ON public.posts FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can insert posts" ON public.posts FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update posts" ON public.posts FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can delete posts" ON public.posts FOR DELETE USING (auth.role() = 'authenticated');
 
--- Allow authenticated users (you) to read all posts, including drafts
-CREATE POLICY "Authenticated users can read all posts"
-ON public.posts FOR SELECT
-USING (auth.role() = 'authenticated');
+-- 5. Create Security Policies for Site Settings
+CREATE POLICY "Public settings are viewable by everyone" ON public.site_settings FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can update settings" ON public.site_settings FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can insert settings" ON public.site_settings FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- Allow authenticated users to insert, update, and delete posts
-CREATE POLICY "Authenticated users can insert posts"
-ON public.posts FOR INSERT
-WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated users can update posts"
-ON public.posts FOR UPDATE
-USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated users can delete posts"
-ON public.posts FOR DELETE
-USING (auth.role() = 'authenticated');
+-- 6. Insert default settings
+INSERT INTO public.site_settings (id, name, bio) VALUES (1, 'Your Name', 'Full-stack developer building cool things on the internet.') ON CONFLICT DO NOTHING;
