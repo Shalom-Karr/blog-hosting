@@ -70,8 +70,13 @@ This project is perfectly suited for **Cloudflare Pages**, GitHub Pages, Vercel,
 1. Push this repository to GitHub.
 2. Log into Cloudflare Dashboard > Pages > Create a project > Connect to Git.
 3. Select your repository.
-4. Leave the **Build command** and **Build output directory** blank (or set output to `/`).
-5. Deploy!
+4. **Important**: Under **Build settings**, set the **Build command** to:
+   ```bash
+   bash scripts/inject-env.sh
+   ```
+5. Set the **Build output directory** to: `.` *(just a single dot)*.
+6. Under **Environment variables**, add `SUPABASE_URL` and `SUPABASE_ANON_KEY` and populate them with your Supabase API keys.
+7. Deploy!
 
 *(Note: Since Supabase keys in this project are anonymous public keys restricted by RLS, it is safe for them to be exposed in the frontend client code).*
 
