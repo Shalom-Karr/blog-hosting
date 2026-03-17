@@ -298,7 +298,7 @@
     function showMsg(id, text, type = 'success') {
       const msg = document.getElementById(id);
       msg.innerText = text;
-      msg.className = \`text-sm h-4 \${type === 'error' ? 'text-red-600' : 'text-green-600'}\`;
+      msg.className = `text-sm h-4 ${type === 'error' ? 'text-red-600' : 'text-green-600'}`;
       setTimeout(() => msg.innerText = '', 3000);
     }
 
